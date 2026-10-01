@@ -5,9 +5,11 @@
         <p class="uppercase text-red-text text-[16px] tracking-widest">Личный кабинет</p>
         <p class="text-4xl font-extrabold">Мои поездки</p>
       </div>
-      <div class="flex gap-0 items-stretch p-1 bg-smooth-bg w-fit">
-        <button class="px-2 py-1 text-[16px] bg-red text-white">Активные (3)</button>
-        <button class="px-2 py-1 text-[16px] bg-bg text-black">Прошедшие (4)</button>
+      <div class="flex gap-2 items-stretch p-1 bg-smooth-bg w-fit">
+        <button class="cursor-pointer px-2 py-1 text-[16px] bg-red text-white">Активные (3)</button>
+        <button
+          class="cursor-pointer px-2 py-1 text-[16px] bg-bg text-black hover:bg-red hover:text-white duration-200">Прошедшие
+          (4)</button>
       </div>
       <div class="w-full p-5 bg-smooth-bg flex flex-col gap-6">
         <div class="flex justify-between items-start">
@@ -29,7 +31,9 @@
           <div class="px-3 py-1 bg-red/10 text-red-text">Подтверждена</div>
         </div>
         <p class="text-sm">Гид Тиаго Фариа: +351 912 345 678 · tiago@example.com</p>
-        <button class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-gray hover:border-red hover:text-red duration-200">Отменить поездку</button>
+        <button
+          class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-gray hover:border-red hover:text-red duration-200">Отменить
+          поездку</button>
       </div>
       <div class="w-full p-5 bg-smooth-bg flex flex-col gap-6 border-2 border-red">
         <div class="flex justify-between items-start">
@@ -40,7 +44,9 @@
           <div class="px-3 py-1 bg-red/10 text-red-text">Подтверждена</div>
         </div>
         <p class="text-sm">Гид Тиаго Фариа: +351 912 345 678 · tiago@example.com</p>
-        <button class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-gray hover:border-red hover:text-red duration-200">Отменить поездку</button>
+        <button
+          class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-gray hover:border-red hover:text-red duration-200">Отменить
+          поездку</button>
       </div>
     </div>
   </div>
