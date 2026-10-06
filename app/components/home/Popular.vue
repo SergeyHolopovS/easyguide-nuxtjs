@@ -13,7 +13,7 @@
       Туров пока нет — загляните позже.
     </p>
     <div v-else class="grid grid-cols-3 gap-5">
-      <TourBar v-for="tour in tours" :key="tour.id" :image="apiUrl(tour.coverUrl)" :city="tour.city" :title="tour.title" :price="tour.price"
+      <TourBar v-for="tour in tours" :key="tour.id" :to="{ path: '/timetable', query: { id: tour.id } }" :image="apiUrl(tour.coverUrl)" :city="tour.city" :title="tour.title" :price="tour.price"
         :rating="tour.rating" />
     </div>
   </div>

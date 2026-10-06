@@ -93,3 +93,145 @@ export interface Page<T> {
   last: boolean
   empty: boolean
 }
+
+export type TourStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+
+export interface TourPhotoResponse {
+  id: string
+  url: string
+  sortOrder: number
+}
+
+export interface TourGuideResponse {
+  id: string
+  name: string
+  avatarUrl: string | null
+  bio: string | null
+}
+
+export interface TourDetailsResponse {
+  id: string
+  title: string
+  description: string
+  city: string
+  category: TourCategory
+  meetingPoint: string
+  // IANA, например Europe/Moscow: по нему считается местное время слотов
+  timezone: string
+  durationMinutes: number
+  price: number | null
+  maxPeople: number
+  status: TourStatus
+  rating: number | null
+  reviewsCount: number
+  photos: TourPhotoResponse[]
+  guide: TourGuideResponse
+}
+
+export interface SlotViewResponse {
+  id: string
+  // Начало в UTC
+  startsAt: string
+  // Дата и время по местному времени тура: YYYY-MM-DD и HH:mm:ss
+  localDate: string
+  localTime: string
+  capacity: number
+  availableSeats: number
+  // Не отменён, не начался и есть свободные места
+  bookable: boolean
+}
+
+export interface SlotsRangeParams {
+  // YYYY-MM-DD, включительно; диапазон не больше 92 дней
+  from: string
+  to: string
+}
+
+export interface CreateSlotsBulkRequest {
+  dates: string[]
+  // HH:mm:ss по часовому поясу тура
+  times: string[]
+  capacity?: number
+}
+
+export interface CreateSlotsBulkResponse {
+  created: number
+  skipped: number
+}
+
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+
+export interface CreateBookingRequest {
+  slotId: string
+  seats: number
+  contactPhone: string
+  comment?: string | null
+}
+
+export interface BookingResponse {
+  id: string
+  slotId: string
+  userId: string
+  seats: number
+  totalPrice: number
+  contactPhone: string | null
+  comment: string | null
+  status: BookingStatus
+  cancelledBy: 'TOURIST' | 'GUIDE' | 'ADMIN' | null
+  cancelReason: string | null
+  createdAt: string
+}
+
+export interface BookingTourResponse {
+  id: string
+  title: string
+  coverPhotoUrl: string | null
+  city: string
+}
+
+export interface BookingSlotResponse {
+  // Дата и время начала по местному времени тура: YYYY-MM-DD и HH:mm:ss
+  date: string
+  time: string
+  timezone: string
+}
+
+export interface BookingCounterpartyResponse {
+  id: string
+  name: string
+  avatarUrl: string | null
+  phone: string | null
+  email: string | null
+}
+
+export interface BookingListItemResponse {
+  id: string
+  tour: BookingTourResponse
+  slot: BookingSlotResponse
+  seats: number
+  totalPrice: number
+  status: BookingStatus
+  comment: string | null
+  // Для туриста — гид, для гида — турист
+  counterparty: BookingCounterpartyResponse
+}
+
+export interface CancelBookingRequest {
+  reason: string
+}
+
+export interface CreateReviewRequest {
+  // 1–5
+  rating: number
+  text?: string | null
+}
+
+export interface ReviewResponse {
+  id: string
+  tourId: string
+  authorId: string
+  bookingId: string
+  rating: number
+  text: string | null
+  createdAt: string
+}
