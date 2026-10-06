@@ -5,21 +5,11 @@
       <p class="text-4xl font-extrabold">Выбирайте по интересу</p>
     </div>
     <div class="flex gap-3 items-center flex-wrap w-full">
-      <a v-for="category in categories" :key="category" href="/"
+      <NuxtLink v-for="(label, category) in CATEGORY_LABELS" :key="category"
+        :to="{ path: '/catalog', query: { category } }"
         class="px-4 py-3 border border-red text-lg text-red hover:text-white hover:bg-red duration-200 cursor-pointer">
-        {{ category }}
-      </a>
+        {{ label }}
+      </NuxtLink>
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-const categories = [
-  'Пешие экскурсии',
-  'Гастрономические туры',
-  'Природа и приключения',
-  'История и культура',
-  'Новая жизнь',
-  'Мастер-классы'
-]
-</script>

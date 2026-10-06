@@ -10,5 +10,12 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()]
   },
 
-  modules: ['@nuxt/icon']
+  modules: ['@nuxt/icon'],
+
+  runtimeConfig: {
+    public: {
+      // Переопределяется переменной окружения NUXT_PUBLIC_API_BASE
+      apiBase: 'http://localhost:8080'
+    }
+  }
 })

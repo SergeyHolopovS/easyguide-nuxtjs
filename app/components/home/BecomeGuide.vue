@@ -10,7 +10,13 @@
         <p class="font-light text-xl">Станьте гидом на Маршруте: публикуйте свои туры, назначайте<br>
           цену и принимайте гостей, которые ищут именно такой опыт.</p>
       </div>
-      <button class="border border-white px-3 py-2 text-xl font-extrabold w-fit cursor-pointer hover:bg-white hover:text-red-text duration-200">Стать гидом</button>
+      <NuxtLink :to="isAuthenticated ? '/profile' : '/signup'"
+        class="border border-white px-3 py-2 text-xl font-extrabold w-fit cursor-pointer hover:bg-white hover:text-red-text duration-200">Стать гидом</NuxtLink>
     </div>
   </div>
 </template>
+
+<script lang="ts" setup>
+// Роль гида включается в профиле; гостю сначала нужно зарегистрироваться
+const { isAuthenticated } = useAuth()
+</script>

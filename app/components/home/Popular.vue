@@ -4,56 +4,30 @@
       <p class="uppercase text-red-text text-[16px] tracking-widest">популярные туры</p>
       <p class="text-4xl font-extrabold">Начните с этих туров</p>
     </div>
-    <div class="grid grid-cols-3 gap-5">
-      <TourBar v-for="tour in tours" :key="tour.title" v-bind="tour" />
+
+    <p v-if="error" role="alert" class="text-lg text-gray-text">
+      Не удалось загрузить туры.
+      <button type="button" class="underline text-red-text cursor-pointer" @click="refresh()">Повторить</button>
+    </p>
+    <p v-else-if="!tours.length" class="text-lg text-gray-text">
+      Туров пока нет — загляните позже.
+    </p>
+    <div v-else class="grid grid-cols-3 gap-5">
+      <TourBar v-for="tour in tours" :key="tour.id" :image="apiUrl(tour.coverUrl)" :city="tour.city" :title="tour.title" :price="tour.price"
+        :rating="tour.rating" />
     </div>
   </div>
   <div class="w-full h-0.75 bg-gray"></div>
 </template>
 
 <script lang="ts" setup>
-const tours = [
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'тегеран',
-    title: 'Поездка в тегеран за счёт ВТБ',
-    price: 38,
-    rating: 4.9
-  },
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'стамбул',
-    title: 'Прогулка по крышам Стамбула',
-    price: 42,
-    rating: 4.8
-  },
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'лиссабон',
-    title: 'Гастротур по районам Лиссабона',
-    price: 55,
-    rating: 4.7
-  },
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'тбилиси',
-    title: 'Вино и хинкали в старом Тбилиси',
-    price: 30,
-    rating: 4.9
-  },
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'ереван',
-    title: 'История и архитектура Еревана',
-    price: 27,
-    rating: 4.6
-  },
-  {
-    image: 'https://c.ekstatic.net/shared/images/destination/v1/airports/IKA/480x480.jpg',
-    city: 'баку',
-    title: 'Ночной Баку и набережная',
-    price: 33,
-    rating: 4.8
-  }
-]
+const POPULAR_COUNT = 6
+
+const { searchTours } = useTours()
+const apiUrl = useApiUrl()
+
+const { data, error, refresh } = await useAsyncData('home-popular-tours',
+  () => searchTours({ sort: 'rating', size: POPULAR_COUNT }))
+
+const tours = computed(() => data.value?.content ?? [])
 </script>
