@@ -2,18 +2,10 @@ import type { AuthResponse, LoginRequest, RegisterRequest, UpdateProfileRequest,
 
 export function useAuth() {
   const { $api } = useNuxtApp()
-  const token = useCookie<string | null>('auth_token', {
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax'
-  })
-  const user = useState<UserResponse | null>('auth_user', () => null)
+  const { accessToken: token, refreshToken, user, setSession, clearSession } = useAuthSession()
 
-  const isAuthenticated = computed(() => !!token.value)
-
-  function setSession(response: AuthResponse) {
-    token.value = response.token
-    user.value = response.user
-  }
+  // Просроченный access-токен не мешает: первый же запрос обновит его по refresh-токену
+  const isAuthenticated = computed(() => !!token.value || !!refreshToken.value)
 
   async function register(payload: RegisterRequest) {
     const response = await $api<AuthResponse>('/api/auth/register', {
@@ -46,10 +38,36 @@ export function useAuth() {
     return user.value
   }
 
-  function logout() {
-    token.value = null
-    user.value = null
+  // Бэкенд требует заполненные bio, city и хотя бы один язык; для гида вызов ничего не меняет
+  async function becomeGuide() {
+    user.value = await $api<UserResponse>('/api/users/me/become-guide', { method: 'POST' })
+    return user.value
   }
 
-  return { token, user, isAuthenticated, register, login, fetchUser, updateProfile, logout }
+  // Профиль по токену из cookie: общий ключ, чтобы шапка и страницы не грузили его дважды.
+  // При 401 плагин уже попробовал обновить токены и, если не вышло, сбросил сессию
+  function loadUser() {
+    return useAsyncData('auth-user', async () => {
+      if (!isAuthenticated.value || user.value) return user.value
+      try {
+        return await fetchUser()
+      } catch {
+        return null
+      }
+    }, { watch: [isAuthenticated] })
+  }
+
+  // Отзываем refresh-токен на бэкенде; выходим локально, даже если запрос не прошёл
+  async function logout() {
+    const pending = refreshToken.value
+    clearSession()
+    if (!pending) return
+    try {
+      await $api('/api/auth/logout', { method: 'POST', body: { refreshToken: pending } })
+    } catch {
+      // Access-токен истечёт сам, а отозвать refresh можно будет только повторным входом
+    }
+  }
+
+  return { token, user, isAuthenticated, register, login, fetchUser, updateProfile, becomeGuide, loadUser, logout }
 }

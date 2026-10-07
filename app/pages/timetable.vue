@@ -19,6 +19,10 @@
         <span v-else class="text-gray-text">Цена не указана</span>
         <span class="text-gray-text"> за человека · {{ formatDuration(tour.durationMinutes) }} · встреча: {{ tour.meetingPoint }}</span>
       </p>
+      <p class="text-[16px] text-gray-text">
+        Гид:
+        <NuxtLink :to="{ path: '/guide', query: { id: tour.guide.id } }" class="text-red-text hover:underline">{{ tour.guide.name }}</NuxtLink>
+      </p>
       <p class="text-sm text-gray-text">Всё время — по часовому поясу тура: {{ tour.city }} ({{ tour.timezone }})</p>
     </div>
     <div class="w-full flex border-y-2 border-gray">

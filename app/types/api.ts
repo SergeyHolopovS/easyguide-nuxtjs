@@ -49,8 +49,15 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
+  // Access-токен (JWT, живёт 15 минут) для заголовка Authorization: Bearer
   token: string
+  // Одноразовый: POST /api/auth/refresh выдаёт новую пару, повторное использование завершает все сессии
+  refreshToken: string
   user: UserResponse
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string
 }
 
 export type TourCategory = 'WALKING' | 'FOOD' | 'HISTORY' | 'NATURE' | 'ADVENTURE' | 'CULTURE' | 'NIGHTLIFE' | 'OTHER'
@@ -64,7 +71,7 @@ export interface TourListItemResponse {
   durationMinutes: number
   rating: number | null
   reviewsCount: number
-  // Обложка (первое фото по sortOrder). Пока бэкенд не отдаёт это поле в списке — запрошено
+  // Обложка (первое фото по sortOrder). Бэкенд в списке её не отдаёт — useTours догружает из GET /api/tours/{id}
   coverUrl?: string | null
 }
 
@@ -234,4 +241,48 @@ export interface ReviewResponse {
   rating: number
   text: string | null
   createdAt: string
+}
+
+// Тело POST /api/tours и PUT /api/tours/{id} (PUT — полная замена полей)
+export interface TourRequest {
+  title: string
+  // Для публикации — минимум 50 символов
+  description: string
+  city: string
+  category: TourCategory
+  meetingPoint: string
+  // IANA, например Europe/Moscow
+  timezone: string
+  // 30–1440
+  durationMinutes: number
+  // Для публикации обязательна
+  price: number | null
+  // 1–50
+  maxPeople: number
+}
+
+// Тур в представлении для владельца-гида
+export interface TourResponse extends TourRequest {
+  id: string
+  guideId: string
+  status: TourStatus
+  photos: TourPhotoResponse[]
+  rating: number | null
+  reviewsCount: number
+}
+
+// Публичный профиль гида: GET /api/users/{id}
+export interface GuideProfileResponse {
+  id: string
+  name: string
+  avatarUrl: string | null
+  bio: string | null
+  city: string | null
+  // Коды языков: ru, en, …
+  languages: string[]
+  createdAt: string
+  averageRating: number | null
+  totalReviewsCount: number
+  // Только опубликованные туры
+  tours: TourListItemResponse[]
 }

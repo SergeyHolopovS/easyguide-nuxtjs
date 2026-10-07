@@ -33,13 +33,16 @@
             <NuxtLink :to="{ path: '/timetable', query: { id: trip.tour.id } }"
               class="text-xl font-extrabold hover:text-red-text duration-200">{{ trip.tour.title }}</NuxtLink>
             <p class="text-sm text-gray-text">
-              {{ formatSlot(trip) }} · {{ trip.seats }} {{ pluralize(trip.seats, SEAT_FORMS) }} · €{{ trip.totalPrice }}
+              {{ formatBookingSlot(trip) }} · {{ trip.seats }} {{ pluralize(trip.seats, SEAT_FORMS) }} · €{{ trip.totalPrice }}
             </p>
           </div>
           <div class="px-3 py-1 shrink-0" :class="statusBadges[trip.status].class">{{ statusBadges[trip.status].label }}</div>
         </div>
 
-        <p v-if="guideContacts(trip)" class="text-sm">{{ guideContacts(trip) }}</p>
+        <p v-if="trip.counterparty" class="text-sm">
+          Гид
+          <NuxtLink :to="{ path: '/guide', query: { id: trip.counterparty.id } }" class="text-red-text hover:underline">{{ trip.counterparty.name }}</NuxtLink><template v-if="guideContacts(trip)">: {{ guideContacts(trip) }}</template>
+        </p>
         <p v-if="trip.comment" class="text-sm text-gray-text">Ваш комментарий: {{ trip.comment }}</p>
 
         <!-- Отмена: API требует указать причину -->
@@ -154,25 +157,10 @@ if (isHttpError(error.value) && error.value.statusCode === 401) {
 
 const tab = ref<Tab>('active')
 
-// Момент начала слота: местные дата и время в часовом поясе тура → UTC
-function slotStart(trip: BookingListItemResponse) {
-  const asUtc = new Date(`${trip.slot.date}T${trip.slot.time}Z`)
-  return new Date(asUtc.getTime() - timezoneOffsetMs(trip.slot.timezone, asUtc))
-}
-
-function timezoneOffsetMs(timeZone: string, at: Date) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
-  }).formatToParts(at)
-  const value = (type: string) => Number(parts.find(part => part.type === type)?.value)
-  const local = Date.UTC(value('year'), value('month') - 1, value('day'), value('hour'), value('minute'), value('second'))
-  return local - at.getTime()
-}
-
 const now = ref(Date.now())
 
 function isUpcoming(trip: BookingListItemResponse) {
-  return slotStart(trip).getTime() > now.value
+  return bookingStart(trip).getTime() > now.value
 }
 
 function isActive(trip: BookingListItemResponse) {
@@ -182,11 +170,11 @@ function isActive(trip: BookingListItemResponse) {
 // Подтверждённая, но уже начавшаяся поездка остаётся в активных, пока гид её не завершит
 const activeTrips = computed(() => (data.value ?? [])
   .filter(trip => isActive(trip) || (trip.status === 'CONFIRMED' && !isUpcoming(trip)))
-  .sort((a, b) => slotStart(a).getTime() - slotStart(b).getTime()))
+  .sort((a, b) => bookingStart(a).getTime() - bookingStart(b).getTime()))
 
 const pastTrips = computed(() => (data.value ?? [])
   .filter(trip => !activeTrips.value.includes(trip))
-  .sort((a, b) => slotStart(b).getTime() - slotStart(a).getTime()))
+  .sort((a, b) => bookingStart(b).getTime() - bookingStart(a).getTime()))
 
 const visibleTrips = computed(() => tab.value === 'active' ? activeTrips.value : pastTrips.value)
 
@@ -275,22 +263,8 @@ async function describeError(error: unknown, fallback: string) {
 
 // Форматирование
 
-const dateFormatter = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
-
-// «27 сентября, 10:00 (Лиссабон, UTC+1)» — время местное для тура
-function formatSlot(trip: BookingListItemResponse) {
-  const date = dateFormatter.format(new Date(`${trip.slot.date}T00:00`))
-  const offset = new Intl.DateTimeFormat('en-US', { timeZone: trip.slot.timezone, timeZoneName: 'shortOffset' })
-    .formatToParts(slotStart(trip))
-    .find(part => part.type === 'timeZoneName')?.value
-    .replace('GMT', 'UTC') ?? trip.slot.timezone
-  return `${date}, ${trip.slot.time.slice(0, 5)} (${trip.tour.city}, ${offset === 'UTC' ? 'UTC+0' : offset})`
-}
-
+// Контакты гида бэкенд присылает только после подтверждения брони
 function guideContacts(trip: BookingListItemResponse) {
-  const guide = trip.counterparty
-  if (!guide) return ''
-  const contacts = [guide.phone, guide.email].filter(Boolean).join(' · ')
-  return contacts ? `Гид ${guide.name}: ${contacts}` : `Гид ${guide.name}`
+  return [trip.counterparty.phone, trip.counterparty.email].filter(Boolean).join(' · ')
 }
 </script>

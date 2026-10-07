@@ -118,7 +118,6 @@ const options: { id: string, label: string }[] = [
           <div class="flex flex-col gap-0.5">
             <h6 class="text-lg font-extrabold">Тиаго Фариа</h6>
             <p class="text-[16px] text-gray-text">Языки: португальский, английский, испанский</p>
-            <NuxtLink class="text-red-text cursor-pointer text-[16px]">Профиль гида →</NuxtLink>
           </div>
         </div>
       </div>
