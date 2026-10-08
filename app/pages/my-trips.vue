@@ -75,32 +75,8 @@
         <!-- Отзыв: один на завершённую бронь -->
         <template v-if="trip.status === 'COMPLETED'">
           <p v-if="reviewedIds.has(trip.id)" role="status" class="text-sm text-gray-text">Спасибо, отзыв сохранён.</p>
-          <form v-else-if="reviewingId === trip.id" class="flex flex-col gap-3" @submit.prevent="submitReview(trip)">
-            <div class="flex flex-col gap-1">
-              <p :id="`review-rating-${trip.id}`" class="text-gray-text text-sm">Оценка</p>
-              <div class="flex gap-1" role="radiogroup" :aria-labelledby="`review-rating-${trip.id}`">
-                <button v-for="star in 5" :key="star" type="button" role="radio" :aria-checked="review.rating === star"
-                  :aria-label="`${star} из 5`" class="text-2xl cursor-pointer duration-200"
-                  :class="star <= review.rating ? 'text-red-text' : 'text-gray-text/50 hover:text-red-text'"
-                  @click="review.rating = star">★</button>
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label :for="`review-text-${trip.id}`" class="text-gray-text text-sm">Отзыв (необязательно)</label>
-              <textarea :id="`review-text-${trip.id}`" v-model="review.text" rows="3" :maxlength="REVIEW_MAX_LENGTH"
-                placeholder="Что понравилось, что можно улучшить"
-                class="text-[16px] px-3 py-1.5 border border-gray bg-bg outline-none focus:border-black duration-200 resize-none"></textarea>
-            </div>
-            <p v-if="actionError" role="alert" class="text-sm text-red-text">{{ actionError }}</p>
-            <div class="flex gap-3">
-              <button type="submit" :disabled="!review.rating || actionPending"
-                class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-red bg-red text-white enabled:hover:bg-transparent enabled:hover:text-red duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                {{ actionPending ? 'Отправляем…' : 'Отправить отзыв' }}
-              </button>
-              <button type="button" class="text-[16px] px-3 py-2 text-gray-text hover:text-black duration-200 cursor-pointer"
-                @click="closeForms">Отмена</button>
-            </div>
-          </form>
+          <ReviewForm v-else-if="reviewingId === trip.id" :id="`review-${trip.id}`" :pending="actionPending"
+            :error="actionError" @submit="submitReview(trip, $event)" @cancel="closeForms" />
           <button v-else type="button"
             class="text-[16px] font-extrabold px-3 py-2 border-2 w-fit border-gray hover:border-red hover:text-red duration-200 cursor-pointer"
             @click="openReview(trip)">Оставить отзыв</button>
@@ -111,14 +87,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { BookingListItemResponse, BookingStatus, ErrorDto } from '~/types/api'
+import type { BookingListItemResponse, BookingStatus, CreateReviewRequest, ErrorDto } from '~/types/api'
 
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Мои поездки — EasyGuide' })
 
 // Защита от бесконечной загрузки: 25 страниц по 20 броней
 const MAX_PAGES = 25
-const REVIEW_MAX_LENGTH = 2000
 
 type Tab = 'active' | 'past'
 
@@ -187,7 +162,6 @@ function isCancellable(trip: BookingListItemResponse) {
 const cancelingId = ref('')
 const cancelReason = ref('')
 const reviewingId = ref('')
-const review = reactive({ rating: 0, text: '' })
 const reviewedIds = ref(new Set<string>())
 const actionPending = ref(false)
 const actionError = ref('')
@@ -206,8 +180,6 @@ function openCancel(trip: BookingListItemResponse) {
 
 function openReview(trip: BookingListItemResponse) {
   closeForms()
-  review.rating = 0
-  review.text = ''
   reviewingId.value = trip.id
 }
 
@@ -230,13 +202,11 @@ async function submitCancel(trip: BookingListItemResponse) {
   }
 }
 
-async function submitReview(trip: BookingListItemResponse) {
-  if (!review.rating) return
-
+async function submitReview(trip: BookingListItemResponse, payload: CreateReviewRequest) {
   actionPending.value = true
   actionError.value = ''
   try {
-    await createReview(trip.id, { rating: review.rating, text: review.text.trim() || null })
+    await createReview(trip.id, payload)
     reviewedIds.value = new Set(reviewedIds.value).add(trip.id)
     closeForms()
   } catch (error) {

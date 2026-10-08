@@ -243,6 +243,17 @@ export interface ReviewResponse {
   createdAt: string
 }
 
+// Отзыв в списке: GET /api/tours/{id}/reviews, по 20 на странице
+export interface ReviewListItemResponse {
+  id: string
+  // 1–5
+  rating: number
+  text: string | null
+  authorName: string
+  authorAvatarUrl: string | null
+  createdAt: string
+}
+
 // Тело POST /api/tours и PUT /api/tours/{id} (PUT — полная замена полей)
 export interface TourRequest {
   title: string

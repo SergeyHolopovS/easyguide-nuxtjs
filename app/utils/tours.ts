@@ -10,3 +10,10 @@ export const CATEGORY_LABELS: Record<TourCategory, string> = {
   NIGHTLIFE: 'Ночная жизнь',
   OTHER: 'Другое'
 }
+
+export function formatDuration(minutes: number) {
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  if (!hours) return `${rest} мин`
+  return rest ? `${hours} ч ${rest} мин` : `${hours} ${pluralize(hours, ['час', 'часа', 'часов'])}`
+}

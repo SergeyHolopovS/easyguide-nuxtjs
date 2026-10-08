@@ -17,12 +17,18 @@ function timezoneOffsetMs(timeZone: string, at: Date) {
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 
+// Смещение часового пояса в момент `at`: «UTC+1», «UTC+0»
+export function formatUtcOffset(timeZone: string, at = new Date()) {
+  const offset = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'shortOffset' })
+    .formatToParts(at)
+    .find(part => part.type === 'timeZoneName')?.value
+    .replace('GMT', 'UTC') ?? timeZone
+  return offset === 'UTC' ? 'UTC+0' : offset
+}
+
 // «27 сентября, 10:00 (Лиссабон, UTC+1)» — время местное для тура
 export function formatBookingSlot(booking: BookingListItemResponse) {
   const date = dateFormatter.format(new Date(`${booking.slot.date}T00:00`))
-  const offset = new Intl.DateTimeFormat('en-US', { timeZone: booking.slot.timezone, timeZoneName: 'shortOffset' })
-    .formatToParts(bookingStart(booking))
-    .find(part => part.type === 'timeZoneName')?.value
-    .replace('GMT', 'UTC') ?? booking.slot.timezone
-  return `${date}, ${booking.slot.time.slice(0, 5)} (${booking.tour.city}, ${offset === 'UTC' ? 'UTC+0' : offset})`
+  const offset = formatUtcOffset(booking.slot.timezone, bookingStart(booking))
+  return `${date}, ${booking.slot.time.slice(0, 5)} (${booking.tour.city}, ${offset})`
 }

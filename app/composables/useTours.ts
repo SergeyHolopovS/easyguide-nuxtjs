@@ -2,6 +2,7 @@ import type {
   CreateSlotsBulkRequest,
   CreateSlotsBulkResponse,
   Page,
+  ReviewListItemResponse,
   SlotsRangeParams,
   SlotViewResponse,
   TourDetailsResponse,
@@ -40,6 +41,11 @@ export function useTours() {
 
   function getTour(id: string) {
     return $api<TourDetailsResponse>(`/api/tours/${id}`)
+  }
+
+  // Отзывы о туре, по 20 на странице; доступны без входа
+  function getTourReviews(id: string, page = 0) {
+    return $api<Page<ReviewListItemResponse>>(`/api/tours/${id}/reviews`, { query: { page } })
   }
 
   // Все туры текущего гида во всех статусах
@@ -98,5 +104,5 @@ export function useTours() {
     return $api(`/api/slots/${slotId}`, { method: 'DELETE' })
   }
 
-  return { searchTours, withCovers, getTour, getMyTours, archiveTour, createTour, updateTour, publishTour, addTourPhoto, deleteTourPhoto, getSlots, createSlotsBulk, cancelSlot, deleteSlot }
+  return { searchTours, withCovers, getTour, getTourReviews, getMyTours, archiveTour, createTour, updateTour, publishTour, addTourPhoto, deleteTourPhoto, getSlots, createSlotsBulk, cancelSlot, deleteSlot }
 }

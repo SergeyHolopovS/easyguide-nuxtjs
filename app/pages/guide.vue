@@ -46,7 +46,7 @@
       <h2 class="text-4xl font-extrabold">Туры гида</h2>
       <p v-if="!tours.length" class="text-lg text-gray-text">Опубликованных туров пока нет.</p>
       <div v-else class="grid grid-cols-3 gap-4">
-        <TourBar v-for="tour in tours" :key="tour.id" :to="{ path: '/timetable', query: { id: tour.id } }"
+        <TourBar v-for="tour in tours" :key="tour.id" :to="{ path: '/tour', query: { id: tour.id } }"
           :image="apiUrl(tour.coverUrl)" :city="tour.city" :title="tour.title" :price="tour.price" :rating="tour.rating" />
       </div>
     </div>

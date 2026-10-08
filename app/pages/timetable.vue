@@ -546,6 +546,13 @@ async function handleBookingError(error: unknown) {
   }
 }
 
+// Дата из ссылки (например, со страницы тура): открываем её месяц и выбираем день, если в нём есть свободные слоты
+const initialDate = typeof route.query.date === 'string' ? route.query.date : ''
+if (!isOwner.value && slotsByDate.value.get(initialDate)?.some(slot => slot.bookable)) {
+  visibleMonth.value = initialDate.slice(0, 7)
+  selectDate(initialDate)
+}
+
 // Управление расписанием (гид)
 
 const guideDates = ref<string[]>([])
@@ -679,12 +686,5 @@ function formatDate(date: string): string {
 // HH:mm:ss → HH:mm
 function formatTime(time: string) {
   return time.slice(0, 5)
-}
-
-function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60)
-  const rest = minutes % 60
-  if (!hours) return `${rest} мин`
-  return rest ? `${hours} ч ${rest} мин` : `${hours} ${pluralize(hours, ['час', 'часа', 'часов'])}`
 }
 </script>

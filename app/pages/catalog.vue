@@ -160,7 +160,7 @@ const fieldClass = 'w-full p-2 border border-gray-text/50 bg-gray/10 text-sm out
         По заданным фильтрам туров не нашлось — попробуйте их изменить.
       </p>
       <div v-else class="grid grid-cols-2 gap-5 duration-200" :class="{ 'opacity-50': status === 'pending' }">
-        <TourBar v-for="tour in tours" :key="tour.id" :to="{ path: '/timetable', query: { id: tour.id } }" :image="apiUrl(tour.coverUrl)" :city="tour.city"
+        <TourBar v-for="tour in tours" :key="tour.id" :to="{ path: '/tour', query: { id: tour.id } }" :image="apiUrl(tour.coverUrl)" :city="tour.city"
           :title="tour.title" :price="tour.price" :rating="tour.rating" />
       </div>
       <nav v-if="totalPages > 1" class="flex justify-center gap-2" aria-label="Страницы каталога">
